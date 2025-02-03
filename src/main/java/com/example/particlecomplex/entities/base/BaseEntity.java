@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -26,9 +27,9 @@ public class BaseEntity extends Entity {
     private double ry;
     private double rx;
 
-    private double xd;
-    private double yd;
-    private double zd;
+    public double xd;
+    public double yd;
+    public double zd;
     private int lifetime;
     String vecAx;
     String vecAy;
@@ -56,6 +57,7 @@ public class BaseEntity extends Entity {
     private String vecExpZ;
     private final int entityID;
     private final List<String> DynamicProperties = new ArrayList<>();
+    public boolean smooth_moving=false;
 
     public BaseEntity(EntityType<?> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
@@ -90,18 +92,33 @@ public class BaseEntity extends Entity {
     }
 
 
-    public void updateOrigin() {
-        this.xo = this.getX();
-        this.yo = this.getY();
-        this.zo = this.getZ();
-        this.age+=1;
-        if (this.age >= this.lifetime) {
-            this.discard();
-        } else {
-
-            this.setPos(this.getX() + this.xd,this.getY() + this.yd,this.getZ() + this.zd);
+    public void updateOrigin(boolean isOnGround) {
+        if(!smooth_moving){
+            this.xo = this.getX();
+            this.yo = this.getY();
+            this.zo = this.getZ();
+            this.age+=1;
+            if (this.age >= this.lifetime) {
+                this.discard();
+            } else {
+                this.setPos(this.getX() + this.xd,this.getY() + this.yd,this.getZ() + this.zd);
+            }
+        }else {
+            this.xo = this.getX();
+            this.yo = this.getY();
+            this.zo = this.getZ();
+            this.age+=1;
+            if (this.age >= this.lifetime) {
+                this.discard();
+            } else {
+                this.move(MoverType.SELF,new Vec3( this.xd, this.yd, this.zd));
+                if (isOnGround) {
+                    this.xd *= 0.7F;
+                    this.zd *= 0.7F;
+                }
         }
-    }
+
+    }}
 
     public void fixVelocityByExpression() { //TODO 错了
 
@@ -713,7 +730,7 @@ public class BaseEntity extends Entity {
         fixVelocityByAcceleration(); // 根据 v=at 修改速度
         fixAExpWithEntity(); //  有实体的加速度表达式更新(有v)
         fixAExpWithoutEntity(); // 无实体的加速度表达式更新(有v)
-        updateOrigin(); // 根据 x=vt 修改位移
+        updateOrigin(this.onGround()); // 根据 x=vt 修改位移
 
         this.speed=new Vector3d(this.xd,this.yd,this.zd);
         this.xd = 0;
