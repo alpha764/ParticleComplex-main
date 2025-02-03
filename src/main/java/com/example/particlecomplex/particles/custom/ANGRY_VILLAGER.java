@@ -1,6 +1,7 @@
 package com.example.particlecomplex.particles.custom;
 
 import com.example.particlecomplex.particles.base.BaseParticleType;
+import com.example.particlecomplex.particles.base.ParticleAreaSpawner;
 import com.example.particlecomplex.registry.ModParticleType;
 import org.jetbrains.annotations.NotNull;
 

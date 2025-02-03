@@ -45,6 +45,13 @@ public class ParticleAreaSpawner {
         this.step = step;
         ParticleAreaSpawner.level = level;
     }
+    public ParticleAreaSpawner(Level level, BaseParticleType type) {
+        this.type = type;
+        this.start = 0;
+        this.end = 1;
+        this.step = 1;
+        ParticleAreaSpawner.level = level;
+    }
 
     public void setPositionExpression(String expressionX, String expressionY, String expressionZ) {
         this.xPositionExpression = expressionX;
@@ -128,6 +135,13 @@ public class ParticleAreaSpawner {
         particles.add(type);
         pointsFromParticles.add(points_n);
     }
+    public void createSingle(double o_x, double o_y, double o_z) {
+        ArrayList<double[]> points_n = new ArrayList<>();
+        double[] newPoint = new double[]{o_x , o_y, o_z};
+        points_n.add(newPoint);
+        particles.add(type);
+        pointsFromParticles.add(points_n);
+    }
 
 
 
@@ -136,7 +150,7 @@ public class ParticleAreaSpawner {
 
 
     // 添加极坐标生成点的方法
-    public void createByPolarPositionExpression(float o_x, float o_y, float o_z) {
+    public void createByPolarPositionExpression(double o_x, double o_y, double o_z) {
         if (rExpression == null || thetaExpression == null || phiExpression == null) {
             this.rExpression="0";
             this.thetaExpression="0";
@@ -276,6 +290,7 @@ public class ParticleAreaSpawner {
         List<BaseParticleType> particlesToRemove = new ArrayList<>();
         for (int i = 0; i < pointsFromParticles.size(); i++) {
             BaseParticleType particle = particles.get(i);
+            if(particle==null){return;}
             double fps = particle.getFps();
 
             double ticksPerFrame = fps >= 1 ? Math.round(1.0 / fps) : 1.0 / fps;

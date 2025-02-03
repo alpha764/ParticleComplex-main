@@ -33,8 +33,8 @@ public class BaseParticle extends SimpleAnimatedParticle {
     final String vecAx;
     final String vecAy;
     final String vecAz;
-    private double age;
-    final private int SUB_SPLIT_TIMES = 1;//原本想切分时间做到更精确加速度效果,但失败了QAQ
+    protected double age;
+    final private int SUB_SPLIT_TIMES = 1;
 
 
     private double ax;
@@ -750,6 +750,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
         this.zd = 0;
         this.yd = 0;
         this.xd = 0;
+
     }
 
 }
