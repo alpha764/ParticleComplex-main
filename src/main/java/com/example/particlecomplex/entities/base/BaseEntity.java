@@ -689,9 +689,7 @@ public class BaseEntity extends Entity {
         return this.speed;
     }
 
-    @Override
-    public void tick() {
-
+    public void processMotion(){
         this.zd = zdo;
         this.yd = ydo;
         this.xd = xdo;
@@ -700,18 +698,24 @@ public class BaseEntity extends Entity {
         UpdateDynamicExpToFactory(); // 把dyExp切割,然后清空dyExp
         dynamicProcess();  // 处理切割后的动态属性映射
         fixVecExpWithEntity(); // 有实体的速度表达式更新
-        fixVecExpWithoutEntity(); // 无实体的速度表达式更新
+        fixVecExpWithoutEntity(); // 无实体的速度表达式更新//TODO 错在这里
 
         rotate(); // 旋转
         fixVelocityByAcceleration(); // 根据 v=at 修改速度
         fixAExpWithEntity(); //  有实体的加速度表达式更新(有v)
         fixAExpWithoutEntity(); // 无实体的加速度表达式更新(有v)
         updateOrigin(); // 根据 x=vt 修改位移
-        this.speed=new Vector3d(this.xd,this.yd,this.zd);
-        this.zd = 0;
-        this.yd = 0;
-        this.xd = 0;
 
+        this.speed=new Vector3d(this.xd,this.yd,this.zd);
+        this.xd = 0;
+        this.yd = 0;
+        this.zd = 0;
+
+    }
+
+    @Override
+    public void tick() {
+       processMotion();
     }
 
     @Override
