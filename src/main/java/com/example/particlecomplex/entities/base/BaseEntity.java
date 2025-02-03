@@ -1,14 +1,16 @@
 package com.example.particlecomplex.entities.base;
 
 import com.example.particlecomplex.ExampleMod;
-import com.example.particlecomplex.particles.base.BaseParticleType;
 import com.example.particlecomplex.utils.expression_utils.ExpressionExtendBuilder;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
@@ -38,9 +40,9 @@ public class BaseEntity extends Entity {
     private double ay;
     private double az;
     private List<Integer> entitiesID=new ArrayList<>(); //只能是服务端的entitiesID
-    private double ydo;
-    private double xdo;
-    private double zdo;
+    private final double ydo;
+    private final double xdo;
+    private final double zdo;
     private String dyexp;
 
     public double originX;
@@ -54,8 +56,6 @@ public class BaseEntity extends Entity {
     private String vecExpZ;
     private final int entityID;
     private final List<String> DynamicProperties = new ArrayList<>();
-    private List<Integer> clientEntitiesID;
-    private List<Integer> serverEntitiesID;
 
     public BaseEntity(EntityType<?> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
@@ -71,7 +71,7 @@ public class BaseEntity extends Entity {
         this.ay = 0;
         this.az = 0;
         this.vecExpX = "0";
-        this.vecExpY = "1";
+        this.vecExpY = "0";
         this.vecExpZ = "0";
         this.originX = this.getX();
         this.originY = this.getY();
@@ -98,12 +98,13 @@ public class BaseEntity extends Entity {
         if (this.age >= this.lifetime) {
             this.discard();
         } else {
+
             this.setPos(this.getX() + this.xd,this.getY() + this.yd,this.getZ() + this.zd);
         }
     }
 
-    public void fixVelocityByExpression() {
-        System.out.println(this.getY());
+    public void fixVelocityByExpression() { //TODO 错了
+
         if (vecExpX.isEmpty()) {
             this.vecExpX="0";
             ExampleMod.LOGGER.error("X速度表达式为空");
@@ -141,6 +142,7 @@ public class BaseEntity extends Entity {
                     .variable("y")
                     .variable("z")
                     .build();
+
             this.yd += expY.setVariable("t", this.age)
                     .setVariable("lifetime", this.lifetime)
                     .setVariable("x", this.getParticleRelativePos().get(0))
@@ -204,9 +206,7 @@ public class BaseEntity extends Entity {
         return 0;
     }
 
-    private int getLifetime() {
-        return lifetime;
-    }
+
 
     public void fixAccelerationByExpression() {
         if(vecAx==null||vecAy==null||vecAz==null){return;} //TODO错误处理
@@ -427,18 +427,19 @@ public class BaseEntity extends Entity {
     }
 
     public void rotate() {
-        double v1x = rotateX(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rx)[0];
-        double v1y = rotateX(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rx)[1];
-        double v1z = rotateX(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rx)[2];
-        double v2x = rotateY(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.ry)[0];
-        double v2y = rotateY(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.ry)[1];
-        double v2z = rotateY(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.ry)[2];
-        double v3x = rotateZ(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rz)[0];
-        double v3y = rotateZ(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rz)[1];
-        double v3z = rotateZ(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rz)[2];
-        this.xd = this.xd + v1x + v2x + v3x;
-        this.yd = this.yd + v1y + v2y + v3y;
-        this.zd = this.zd + v1z + v2z + v3z;
+        if(rx!=0||ry!=0||rz!=0){
+            double v1x = rotateX(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rx)[0];
+            double v1y = rotateX(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rx)[1];
+            double v1z = rotateX(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rx)[2];
+            double v2x = rotateY(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.ry)[0];
+            double v2y = rotateY(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.ry)[1];
+            double v2z = rotateY(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.ry)[2];
+            double v3x = rotateZ(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rz)[0];
+            double v3y = rotateZ(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rz)[1];
+            double v3z = rotateZ(this.centerX, this.centerY, this.centerZ, this.getX(), this.getY(), this.getZ(), this.rz)[2];
+            this.xd = this.xd + v1x + v2x + v3x;
+            this.yd = this.yd + v1y + v2y + v3y;
+            this.zd = this.zd + v1z + v2z + v3z;}
     }
 
 
@@ -641,9 +642,9 @@ public class BaseEntity extends Entity {
         }
     }
     public void setSpeed(double vx,double vy,double vz){
-        this.xdo=vx;
-        this.ydo=vy;
-        this.zdo=vz;
+        this.vecExpX= String.valueOf(vx);
+        this.vecExpY= String.valueOf(vy);
+        this.vecExpZ= String.valueOf(vz);
     }
     public void setLifetime(int lifetime){
         this.lifetime=lifetime;
@@ -674,9 +675,18 @@ public class BaseEntity extends Entity {
         this.vecAz=vecExpAZ;
         return this;
     }
+    public int getLifetime(){
+        return this.lifetime;
+    }
+    public double getAge(){
+        return this.age;
+    }
 
     public double getAx() {
         return ax;
+    }
+    public Vec3 getRotation() {
+        return new Vec3(rx,ry,rz);
     }
 
     public double getAy() {
@@ -688,7 +698,6 @@ public class BaseEntity extends Entity {
     public Vector3d getSpeed() {
         return this.speed;
     }
-
     public void processMotion(){
         this.zd = zdo;
         this.yd = ydo;
@@ -713,9 +722,45 @@ public class BaseEntity extends Entity {
 
     }
 
+    public Vector3d getHitDirection(int distance) {
+        // 获取实体的当前位置
+        Vec3 entityPosition = this.position();
+
+        // 获取实体的朝向
+        Vec3 lookDirection = this.getLookAngle().scale(distance); // 按照实体的视线方向设置射线的长度
+
+        // 设置射线检测的上下文，ClipContext对象
+        ClipContext context = new ClipContext(
+                new Vec3(entityPosition.x, entityPosition.y, entityPosition.z),
+                new Vec3(entityPosition.x + lookDirection.x, entityPosition.y + lookDirection.y, entityPosition.z + lookDirection.z),
+                ClipContext.Block.OUTLINE, // 检查碰撞方块的外轮廓
+                ClipContext.Fluid.NONE, // 不考虑流体的影响
+                this // 实体本身
+        );
+
+        // 使用clip方法进行碰撞检测
+        BlockHitResult hitResult = level().clip(context);
+
+        // 如果发生了碰撞
+        if (hitResult.getType() == BlockHitResult.Type.BLOCK) {
+            // 获取碰撞方块的位置
+            BlockPos blockPos = hitResult.getBlockPos();
+            // 获取碰撞方块的状态（可用于检查方块类型等）
+
+            // 获取碰撞方向
+
+            // 返回碰撞方向向量
+            return new Vector3d(hitResult.getDirection().getStepX(), hitResult.getDirection().getStepY(), hitResult.getDirection().getStepZ());
+        }
+
+        return null; // 若没有碰撞，返回null
+    }
+
+
+
     @Override
     public void tick() {
-       processMotion();
+        processMotion();
     }
 
     @Override
