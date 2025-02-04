@@ -59,12 +59,18 @@ public class BaseParticle extends SimpleAnimatedParticle {
     private String vecExpZ;
     private final int entityID;
     private final List<String> DynamicProperties = new ArrayList<>();
+    private boolean isLocked=false;
+    private double pitchX;
+    private double yawY;
+    private double rollZ;
 
 
     public BaseParticle(ClientLevel pLevel, SpriteSet spriteSet, double pX, double pY, double pZ, Vector3d speed, Vector4i color,
                         double diameter, int lifetime, String vecExpX, String vecExpY, String vecExpZ,
                         double a_x, double a_y, double a_z, double centerX, double centerY, double centerZ,
-                        List<Integer> entitiesID, int entityID, String dyexp, double rx, double ry, double rz,double internalRandomValueVecX,double internalRandomValueVecY,double internalRandomValueVecZ,String vecAx,String vecAy,String vecAz) {
+                        List<Integer> entitiesID, int entityID, String dyexp, double rx, double ry, double rz,
+                        double internalRandomValueVecX,double internalRandomValueVecY,double internalRandomValueVecZ,String vecAx,String vecAy,
+                        String vecAz,boolean isLocked,double pitchX,double yaw,double rollZ) {
         super(pLevel, pX, pY, pZ, spriteSet, 0);
         this.lifetime = lifetime;
         this.xd = speed.x;
@@ -110,6 +116,10 @@ public class BaseParticle extends SimpleAnimatedParticle {
         this.vecAx=vecAx;
         this.vecAy=vecAy;
         this.vecAz=vecAz;
+        this.isLocked=isLocked;
+        this.pitchX=pitchX;
+        this.yawY =yaw;
+        this.rollZ=rollZ;
     }
 
     protected void updateSprite() {
@@ -168,6 +178,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .variable("x")
                     .variable("y")
                     .variable("z")
+                    .variable("pt")
                     .variable("sRandom")
                     .build();
 
@@ -178,6 +189,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .setVariable("y", this.getParticleRelativePos().get(1))
                     .setVariable("z", this.getParticleRelativePos().get(2))
                     .setVariable("sRandom", internalRandomValueVecX)
+                    .setVariable("pt",this.age/this.lifetime)
                     .evaluate();
 
 
@@ -187,6 +199,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .variable("x")
                     .variable("y")
                     .variable("z")
+                    .variable("pt")
                     .variable("sRandom")
                     .build();
             this.yd += expY.setVariable("t", this.age)
@@ -195,6 +208,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .setVariable("y", this.getParticleRelativePos().get(1))
                     .setVariable("z", this.getParticleRelativePos().get(2))
                     .setVariable("sRandom", internalRandomValueVecY)
+                    .setVariable("pt",this.age/this.lifetime)
                     .evaluate();
         } catch (Exception e) {
             System.err.println("错误的参数格式");
@@ -207,6 +221,8 @@ public class BaseParticle extends SimpleAnimatedParticle {
                 .variable("y")
                 .variable("z")
                 .variable("sRandom")
+                .variable("pt")
+
                 .build();
         this.zd = expZ.setVariable("t", this.age)
                 .setVariable("x", this.getParticleRelativePos().get(0))
@@ -214,6 +230,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                 .setVariable("z", this.getParticleRelativePos().get(2))
                 .setVariable("lifetime", this.lifetime)
                 .setVariable("sRandom", internalRandomValueVecZ)
+                .setVariable("pt",this.age/this.lifetime)
                 .evaluate();
     }
 
@@ -225,6 +242,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .variable("x")
                     .variable("y")
                     .variable("z")
+                    .variable("pt")
                     .variable("sRandom");
 
             for (int i = 0; i < entitiesID.size(); i++) {
@@ -240,6 +258,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .setVariable("lifetime", this.getLifetime())
                     .setVariable("x", this.getParticleRelativePos().get(0))
                     .setVariable("y", this.getParticleRelativePos().get(1))
+                    .setVariable("pt",this.age/this.lifetime)
                     .setVariable("z", this.getParticleRelativePos().get(2));
 
             if(Objects.equals(vecExp, this.vecExpX))exp_.setVariable("sRandom",this.internalRandomValueVecX);
@@ -281,6 +300,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .variable("vx")
                     .variable("vy")
                     .variable("vz")
+                    .variable("pt")
                     .build();
 
 
@@ -293,6 +313,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .setVariable("vy",this.yd)
                     .setVariable("vz",this.zd)
                     .setVariable("sRandom", internalRandomValueVecX)
+                    .setVariable("pt",this.age/this.lifetime)
                     .evaluate();
 
 
@@ -306,6 +327,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .variable("vx")
                     .variable("vy")
                     .variable("vz")
+                    .variable("pt")
                     .build();
 
             this.ay += expY.setVariable("t", this.age)
@@ -317,6 +339,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .setVariable("vy",this.yd)
                     .setVariable("vz",this.zd)
                     .setVariable("sRandom", internalRandomValueVecY)
+                    .setVariable("pt",this.age/this.lifetime)
                     .evaluate();
         } catch (Exception e) {
             System.err.println("错误的参数格式");
@@ -332,6 +355,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                 .variable("vx")
                 .variable("vy")
                 .variable("vz")
+                .variable("pt")
                 .build();
         this.az = expZ.setVariable("t", this.age)
                 .setVariable("x", this.getParticleRelativePos().get(0))
@@ -342,6 +366,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                 .setVariable("vz",this.zd)
                 .setVariable("lifetime", this.lifetime)
                 .setVariable("sRandom", internalRandomValueVecZ)
+                .setVariable("pt",this.age/this.lifetime)
                 .evaluate();
 
     }
@@ -358,6 +383,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .variable("vx")
                     .variable("vy")
                     .variable("vz")
+                    .variable("pt")
 
                     .variable("sRandom");
 
@@ -377,6 +403,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
                     .setVariable("vz",this.zd)
                     .setVariable("x", this.getParticleRelativePos().get(0))
                     .setVariable("y", this.getParticleRelativePos().get(1))
+                    .setVariable("pt",this.age/this.lifetime)
                     .setVariable("z", this.getParticleRelativePos().get(2));
 
 
@@ -500,6 +527,48 @@ public class BaseParticle extends SimpleAnimatedParticle {
     }
 
 
+    /**
+     * 直接设置粒子绕各轴的旋转角度（立即生效）
+     * @param pitchX 绕X轴旋转角度（度）
+     * @param yawY   绕Y轴旋转角度（度）
+     * @param rollZ  绕Z轴旋转角度（度）
+     */
+    public void setRotationAngles(double pitchX, double yawY, double rollZ) {
+        // 计算相对于初始位置的旋转偏移
+        double[] rotatedX = rotateX(this.centerX, this.centerY, this.centerZ,
+                this.originX, this.originY, this.originZ, pitchX);
+        double[] rotatedXY = rotateY(this.centerX, this.centerY, this.centerZ,
+                this.originX + rotatedX[0],
+                this.originY + rotatedX[1],
+                this.originZ + rotatedX[2], yawY);
+        double[] rotatedXYZ = rotateZ(this.centerX, this.centerY, this.centerZ,
+                this.originX + rotatedX[0] + rotatedXY[0],
+                this.originY + rotatedX[1] + rotatedXY[1],
+                this.originZ + rotatedX[2] + rotatedXY[2], rollZ);
+
+        // 应用最终旋转偏移
+        this.x = this.originX + rotatedX[0] + rotatedXY[0] + rotatedXYZ[0];
+        this.y = this.originY + rotatedX[1] + rotatedXY[1] + rotatedXYZ[1];
+        this.z = this.originZ + rotatedX[2] + rotatedXY[2] + rotatedXYZ[2];
+
+        // 重置角速度（可选）
+        this.rx = 0;
+        this.ry = 0;
+        this.rz = 0;
+    }
+
+    // 新增辅助方法
+    private double[] getOriginPosition() {
+        return new double[]{this.originX, this.originY, this.originZ};
+    }
+
+    private void resetToOrigin() {
+        this.x = this.originX;
+        this.y = this.originY;
+        this.z = this.originZ;
+    }
+
+
     public void stringMap(String y, String Exp) {
         //控制自变量的类型
         Map<String, Double> variables = new HashMap<>();
@@ -527,7 +596,10 @@ public class BaseParticle extends SimpleAnimatedParticle {
         variables.put("random1", this.internalRandomValueVecX);
         variables.put("random2", this.internalRandomValueVecY);
         variables.put("random3", this.internalRandomValueVecZ);
-
+        variables.put("pt",this.age/this.lifetime);
+        variables.put("pitchX",this.pitchX);
+        variables.put("yawY",this.yawY);
+        variables.put("rollZ",this.rollZ);
         //特殊:实体自变量
         for (String i : Arrays.asList("x", "y", "z")) {
             for (int j = 0; j < entitiesID.size(); j++) {
@@ -584,15 +656,12 @@ public class BaseParticle extends SimpleAnimatedParticle {
                 this.zd += e_.setVariables(variables).evaluate();
                 break;
             case "x":
-                ExampleMod.LOGGER.warn("不建议将x作为应变量,可能导致意料之外后果,建议采用ParticleSpawner");
                 this.x = e_.setVariables(variables).evaluate() + centerX;
                 break;
             case "y":
-                ExampleMod.LOGGER.warn("不建议将y作为应变量,可能导致意料之外后果,建议采用ParticleSpawner");
                 this.y = e_.setVariables(variables).evaluate() + centerY;
                 break;
             case "z":
-                ExampleMod.LOGGER.warn("不建议将z作为应变量,可能导致意料之外后果,建议采用ParticleSpawner");
                 this.z = e_.setVariables(variables).evaluate() + centerZ;
                 break;
             case "r":
@@ -622,6 +691,12 @@ public class BaseParticle extends SimpleAnimatedParticle {
             case "t":
                 this.age = (int) e_.setVariables(variables).evaluate();
                 break;
+            case "pitchX":
+                this.pitchX=e_.setVariables(variables).evaluate();
+            case"yawY":
+                this.yawY=e_.setVariables(variables).evaluate();
+            case"rollZ":
+                this.rollZ=e_.setVariables(variables).evaluate();
             default:
                 throw new IllegalArgumentException("Invalid variable: " + y);
         }
@@ -733,23 +808,27 @@ public class BaseParticle extends SimpleAnimatedParticle {
         this.zd = zdo;
         this.yd = ydo;
         this.xd = xdo;
+        if(!isLocked){
+            if(this.pitchX==-1&&this.rollZ==-1&&this.yawY==-1) {}else {
+                setRotationAngles(pitchX,yawY,rollZ);
+            }
+            updateSprite(); // 更新纹理
 
-        updateSprite(); // 更新纹理
-        UpdateDynamicExpToFactory(); // 把dyExp切割,然后清空dyExp
-        dynamicProcess();  // 处理切割后的动态属性映射
-        fixVecExpWithEntity(); // 有实体的速度表达式更新
-        fixVecExpWithoutEntity(); // 无实体的速度表达式更新
 
-        for (int i = 0; i < SUB_SPLIT_TIMES; i++) {
+            UpdateDynamicExpToFactory(); // 把dyExp切割,然后清空dyExp
+            dynamicProcess();  // 处理切割后的动态属性映射
+            fixVecExpWithEntity(); // 有实体的速度表达式更新
+            fixVecExpWithoutEntity(); // 无实体的速度表达式更新
             rotate(); // 旋转
             fixVelocityByAcceleration(); // 根据 v=at 修改速度
             fixAExpWithEntity(); //  有实体的加速度表达式更新(有v)
             fixAExpWithoutEntity(); // 无实体的加速度表达式更新(有v)
             updateOrigin(); // 根据 x=vt 修改位移
-        }
+
         this.zd = 0;
         this.yd = 0;
         this.xd = 0;
+        }
 
     }
 

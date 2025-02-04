@@ -16,6 +16,11 @@ import java.util.*;
 
 @Mod.EventBusSubscriber(modid = ExampleMod.MODID)
 public class ParticleAreaSpawner {
+    private  static int id;
+
+    private  int lockTime;
+    private  boolean startLockMode;
+    private  int targetTime;
 
     private final BaseParticleType type;
     private final double start;
@@ -27,6 +32,7 @@ public class ParticleAreaSpawner {
 
     private static final ArrayList<ArrayList<double[]>> pointsFromParticles = new ArrayList<>();
     private static final ArrayList<BaseParticleType> particles = new ArrayList<>();
+    private static final ArrayList<BaseParticleType> lockingParticles = new ArrayList<>();
 
     private String xPositionExpression = null;
     private String yPositionExpression = null;
@@ -52,6 +58,8 @@ public class ParticleAreaSpawner {
         this.step = 1;
         ParticleAreaSpawner.level = level;
     }
+
+
 
     public void setPositionExpression(String expressionX, String expressionY, String expressionZ) {
         this.xPositionExpression = expressionX;
@@ -134,6 +142,9 @@ public class ParticleAreaSpawner {
         }
         particles.add(type);
         pointsFromParticles.add(points_n);
+        if(startLockMode){
+            lockingParticles.add(type);
+        }
     }
     public void createSingle(double o_x, double o_y, double o_z) {
         ArrayList<double[]> points_n = new ArrayList<>();
@@ -141,6 +152,9 @@ public class ParticleAreaSpawner {
         points_n.add(newPoint);
         particles.add(type);
         pointsFromParticles.add(points_n);
+        if(startLockMode){
+            lockingParticles.add(type);
+        }
     }
 
 
@@ -204,6 +218,9 @@ public class ParticleAreaSpawner {
         }
         particles.add(type);
         pointsFromParticles.add(points);
+        if(startLockMode){
+            lockingParticles.add(type);
+        }
     }
 
 
@@ -225,6 +242,9 @@ public class ParticleAreaSpawner {
         }
         particles.add(type);
         pointsFromParticles.add(points);
+        if(startLockMode){
+            lockingParticles.add(type);
+        }
     }
 
     static class ControlPointLineSegments {
@@ -281,48 +301,100 @@ public class ParticleAreaSpawner {
         }
         particles.add(type);
         pointsFromParticles.add(points);
+        if(startLockMode){
+            lockingParticles.add(type);
+        }
     }
 
 
 
     @SubscribeEvent
+    // 用于处理每帧粒子效果的逻辑
     public static void onFrameTick(TickEvent.ClientTickEvent event) {
         List<BaseParticleType> particlesToRemove = new ArrayList<>();
+
+        // 遍历所有粒子并处理它们的渲染逻辑
         for (int i = 0; i < pointsFromParticles.size(); i++) {
             BaseParticleType particle = particles.get(i);
-            if(particle==null){return;}
-            double fps = particle.getFps();
+            if (particle == null) continue;  // 注意：这里可能需要改为 continue 避免跳过后续粒子
 
-            double ticksPerFrame = fps >= 1 ? Math.round(1.0 / fps) : 1.0 / fps;
-            int framesToRender = (int) Math.round(fps >= 1 ? fps : 1.0 / ticksPerFrame);
+            // 根据粒子FPS计算需要渲染的帧数
+            int framesToRender = calculateFramesToRender(particle);
 
+            // 获取该粒子的坐标点集合
             ArrayList<double[]> points = pointsFromParticles.get(i);
-            if (points.isEmpty()) {
-                particlesToRemove.add(particle);
-                continue;
+            if (points == null) {
+                points = new ArrayList<>();
             }
 
-            for (int j = 0; j < framesToRender; j++) {
-                if (!points.isEmpty()) {
-                    double[] point = points.get(0);
-                    // 判断是否是服务端，调用不同的生成粒子方法
-                    if (level != null &&!level.isClientSide) {
-                        ServerLevel serverLevel=(ServerLevel) level;
-                        for (ServerPlayer player : serverLevel.players()) {
-                            serverLevel.sendParticles(player, particle, true, point[0], point[1], point[2],
-                                    1, 0, 0, 0, 0);
-                        }
-                    } else if (level != null) {
-                        level.addParticle(particle, true, point[0], point[1], point[2], 0, 0, 0);
-                    }
-                    points.remove(0);
-                } else {
-                    particlesToRemove.add(particle);
-                    break;
-                }
+            // 处理单个粒子的帧渲染
+            boolean shouldRemove = renderParticleFrames(particle, points, framesToRender);
+            if (shouldRemove) {
+                particlesToRemove.add(particle);
             }
         }
 
+        // 移除所有需要删除的粒子
+        removeMarkedParticles(particlesToRemove);
+    }
+
+    // 计算需要渲染的帧数
+    private static int calculateFramesToRender(BaseParticleType particle) {
+        double fps = particle.getFps();
+        double ticksPerFrame = (fps >= 1) ? Math.round(1.0 / fps) : 1.0 / fps;
+        return (int) Math.round((fps >= 1) ? fps : 1.0 / ticksPerFrame);
+    }
+
+    // 渲染单个粒子的多个帧
+    private static boolean renderParticleFrames(
+            BaseParticleType particle,
+            ArrayList<double[]> points,
+            int framesToRender
+    ) {
+        if (points.isEmpty()) {
+            return true; // 标记需要移除
+        }
+
+        for (int j = 0; j < framesToRender; j++) {
+            if (points.isEmpty()) {
+                return true; // 标记需要移除
+            }
+
+            double[] point = points.get(0);
+            sendParticle(particle, point);
+            points.remove(0);
+        }
+
+        return false; // 不需要移除
+    }
+
+    // 发送粒子到客户端/服务端
+    private static void sendParticle(BaseParticleType particle, double[] point) {
+        if (level == null) return;
+        id++;
+        // 服务端需要发送给所有玩家
+        if (!level.isClientSide) {
+            ServerLevel serverLevel = (ServerLevel) level;
+            for (ServerPlayer player : serverLevel.players()) {
+                serverLevel.sendParticles(
+                        player, particle, true,
+                        point[0], point[1], point[2],
+                        1, 0, 0, 0, 0
+                );
+            }
+        }
+        // 客户端直接添加粒子
+        else {
+            level.addParticle(
+                    particle, true,
+                    point[0], point[1], point[2],
+                    0, 0, 0
+            );
+        }
+    }
+
+    // 移除已标记的粒子
+    private static void removeMarkedParticles(List<BaseParticleType> particlesToRemove) {
         for (BaseParticleType particle : particlesToRemove) {
             int index = particles.indexOf(particle);
             if (index != -1) {

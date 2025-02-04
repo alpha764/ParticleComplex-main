@@ -46,6 +46,11 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
     private String vecAx;//加速度
     private String vecAy;
     private String vecAz;
+    private boolean isLocked;
+    private  double pitchX;
+    private  double yawY;
+    private  double rollZ;
+
 
 
     public static final Deserializer<BaseParticleType> DESERIALIZER = new Deserializer<>() {
@@ -98,7 +103,7 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
             String dynamicExp = pReader.readString();
 
 
-            return new BaseParticleType(new Vector3d(speedX, speedY, speedZ), new Vector4i(red, green, blue, alpha), diameter, lifetime, vecExpX, vecExpY, vecExpZ, ax, ay, az, centerX, centerY, centerZ, l1, entityId, fps, dynamicExp, 0, 0, 0,"","","");
+            return new BaseParticleType(new Vector3d(speedX, speedY, speedZ), new Vector4i(red, green, blue, alpha), diameter, lifetime, vecExpX, vecExpY, vecExpZ, ax, ay, az, centerX, centerY, centerZ, l1, entityId, fps, dynamicExp, 0, 0, 0,"","","",false,-1,-1,-1);
         }
 
 
@@ -134,12 +139,16 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
             String vecAx=pBuffer.readUtf();
             String vecAy=pBuffer.readUtf();
             String vecAz=pBuffer.readUtf();
-            return new BaseParticleType(new Vector3d(speedX, speedY, speedZ), new Vector4i(red, green, blue, alpha), diameter, lifetime, vecExpX, vecExpY, vecExpZ, ax, ay, az, centerX, centerY, centerZ, entitiesID, entityId, fps, dynamicExp, rx, ry, rz,vecAx,vecAy,vecAz);
+            boolean isLocked=pBuffer.readBoolean();
+            double pitchX=pBuffer.readDouble();
+            double yawY=pBuffer.readDouble();
+            double rollZ=pBuffer.readDouble();
+            return new BaseParticleType(new Vector3d(speedX, speedY, speedZ), new Vector4i(red, green, blue, alpha), diameter, lifetime, vecExpX, vecExpY, vecExpZ, ax, ay, az, centerX, centerY, centerZ, entitiesID, entityId, fps, dynamicExp, rx, ry, rz,vecAx,vecAy,vecAz,isLocked,pitchX,yawY,rollZ);
         }
     };
 
 
-    public BaseParticleType(Vector3d speed, Vector4i color, float diameter, int lifetime, String vecExpX, String vecExpY, String vecExpZ, double ax, double ay, double az, double centerX, double centerY, double centerZ, List<Integer> entitiesID, int entityID, int fps, String dynamicExp, double rx, double ry, double rz,String vecAx,String vecAy,String vecAz) {
+    public BaseParticleType(Vector3d speed, Vector4i color, float diameter, int lifetime, String vecExpX, String vecExpY, String vecExpZ, double ax, double ay, double az, double centerX, double centerY, double centerZ, List<Integer> entitiesID, int entityID, int fps, String dynamicExp, double rx, double ry, double rz,String vecAx,String vecAy,String vecAz,boolean isLocked,double pitchX,double yawY,double rollZ) {
 
         super(true, DESERIALIZER);//控制粒子在人视线之外是否渲染(薛定谔的粒子
         this.speed = speed;
@@ -165,13 +174,18 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
         this.vecAx=vecAx;
         this.vecAz=vecAz;
         this.vecAy=vecAy;
+        this.isLocked=isLocked;
+        this.pitchX=pitchX;
+        this.yawY=yawY;
+        this.rollZ=rollZ;
 
     }
 
+    //ININTIAL
     public BaseParticleType() {
         super(false, DESERIALIZER);
         this.speed = new Vector3d(0, 0, 0);
-        this.color = new Vector4i(0, 0, 0, 255);
+        this.color = new Vector4i(100, 100, 100, 255);
         this.diameter = 1;
         this.lifetime = 60;
         this.vecExpX = "0";
@@ -188,6 +202,10 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
         this.centerZ = 0;
         this.entitiesID = entitiesID != null ? entitiesID : new ArrayList<>();
         this.dynamicExp = "";
+        this.isLocked=false;
+        this.pitchX=-1;
+        this.yawY=-1;
+        this.rollZ=-1;
     }
 
 
@@ -221,6 +239,10 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
         pBuffer.writeUtf(this.vecAx);
         pBuffer.writeUtf(this.vecAy);
         pBuffer.writeUtf(this.vecAz);
+        pBuffer.writeBoolean(this.isLocked);
+        pBuffer.writeDouble(this.pitchX);
+        pBuffer.writeDouble(this.yawY);
+        pBuffer.writeDouble(this.rollZ);
     }
 
 
@@ -254,6 +276,15 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
 
         return this;
     }
+    public double[] getAngle(){
+        return new  double[]{pitchX,yawY,rollZ};
+    }
+    public BaseParticleType setAngle( double pitchX,double yawY,double rollZ){
+        this.pitchX=pitchX;
+        this.yawY=yawY;
+        this.rollZ=rollZ;
+        return this;
+    }
 
     public String getDynamicExp() {
         return this.dynamicExp;
@@ -275,7 +306,10 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
         this.color = new Vector4i(r, g, b, a);
         return this;
     }
-
+    private BaseParticleType setIsLocked(boolean isLocked){
+        this.isLocked=isLocked;
+        return this;
+    }
     public BaseParticleType setSpeed(Vector3d speed) {
         this.speed = speed;
         return this;
@@ -356,6 +390,8 @@ public class BaseParticleType extends ParticleType<BaseParticleType> implements 
     public String getVecAz(){
         return this.vecAz;
     }
+    public boolean getIsLocked(){return this.isLocked;}
+
 
 
     public double getRotationX() {

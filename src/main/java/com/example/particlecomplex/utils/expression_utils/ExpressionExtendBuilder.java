@@ -68,12 +68,15 @@ import java.util.Random;
  */
 public class ExpressionExtendBuilder extends ExpressionBuilder {
     public static void main(String[] args){
-        Expression e = new ExpressionExtendBuilder("1/t")
-                .variables("t","y", "x")
-                .build();
-        e.setVariable("t",0.2);
-        double result = e.evaluate(); // result = π/4 (0.7853981633974483)
-        System.out.println(result);
+        for (float i = 0; i < 1; i+=0.01f) {
+            Expression e = new ExpressionExtendBuilder("(if(pt,0,0.5)*((2pt)^2)+if(pt,0.5,1)*((2-2pt)^2))*5")
+                    .variables("t","y", "x","pt")
+                    .build();
+            e.setVariable("pt",i);
+            double result = e.evaluate(); // result = π/4 (0.7853981633974483)
+            System.out.println(result);
+        }
+
     }
 
     public ExpressionExtendBuilder(String expression) {

@@ -23,7 +23,7 @@ public class BaseParticleProvider implements ParticleProvider<BaseParticleType> 
                 pType.getDiameter(), pType.getLifetime(), pType.getVecExpX(), pType.getVecExpY(), pType.getVecExpZ(), pType.getAx(),
                 pType.getAy(), pType.getAz(), pType.getCenter().get(0), pType.getCenter().get(1), pType.getCenter().get(2),
                 pType.getEntitiesID(), pType.getEntityID(), pType.getDynamicExp(),
-                pType.getRotationX(), pType.getRotationY(), pType.getRotationZ(), new Random().nextDouble(),new Random().nextDouble(),new Random().nextDouble(),pType.getVecAx(),pType.getVecAy(),pType.getVecAz());
+                pType.getRotationX(), pType.getRotationY(), pType.getRotationZ(), new Random().nextDouble(),new Random().nextDouble(),new Random().nextDouble(),pType.getVecAx(),pType.getVecAy(),pType.getVecAz(),pType.getIsLocked(),pType.getAngle()[0],pType.getAngle()[1],pType.getAngle()[2]);
         exampleParticle.pickSprite(this.sprites);
         return exampleParticle;
     }

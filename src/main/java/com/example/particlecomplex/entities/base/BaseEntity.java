@@ -137,6 +137,7 @@ public class BaseEntity extends Entity {
         try {
             Expression expX = new ExpressionExtendBuilder(vecExpX)
                     .variable("lifetime")
+                    .variable("pt")
                     .variable("t")
                     .variable("x")
                     .variable("y")
@@ -149,6 +150,7 @@ public class BaseEntity extends Entity {
                     .setVariable("x", this.getParticleRelativePos().get(0))
                     .setVariable("y", this.getParticleRelativePos().get(1))
                     .setVariable("z", this.getParticleRelativePos().get(2))
+                    .setVariable("pt",this.age/this.lifetime)
                     .evaluate();
 
 
@@ -158,6 +160,7 @@ public class BaseEntity extends Entity {
                     .variable("x")
                     .variable("y")
                     .variable("z")
+                    .variable("pt")
                     .build();
 
             this.yd += expY.setVariable("t", this.age)
@@ -165,6 +168,7 @@ public class BaseEntity extends Entity {
                     .setVariable("x", this.getParticleRelativePos().get(0))
                     .setVariable("y", this.getParticleRelativePos().get(1))
                     .setVariable("z", this.getParticleRelativePos().get(2))
+                    .setVariable("pt",this.age/this.lifetime)
                     .evaluate();
         } catch (Exception e) {
             System.err.println("错误的参数格式");
@@ -176,12 +180,14 @@ public class BaseEntity extends Entity {
                 .variable("x")
                 .variable("y")
                 .variable("z")
+                .variable("pt")
                 .build();
         this.zd = expZ.setVariable("t", this.age)
                 .setVariable("x", this.getParticleRelativePos().get(0))
                 .setVariable("y", this.getParticleRelativePos().get(1))
                 .setVariable("z", this.getParticleRelativePos().get(2))
                 .setVariable("lifetime", this.lifetime)
+                .setVariable("pt",this.age/this.lifetime)
                 .evaluate();
     }
 
@@ -190,6 +196,7 @@ public class BaseEntity extends Entity {
             ExpressionBuilder exp_Builder = new ExpressionExtendBuilder(vecExp)
                     .variable("lifetime")
                     .variable("t")
+                    .variable("pt")
                     .variable("x")
                     .variable("y")
                     .variable("z");
@@ -205,9 +212,11 @@ public class BaseEntity extends Entity {
             Expression exp_ = exp_Builder.build();
             exp_.setVariable("t", this.age)
                     .setVariable("lifetime", this.getLifetime())
+                    .setVariable("pt",this.age/this.lifetime)
                     .setVariable("x", this.getParticleRelativePos().get(0))
                     .setVariable("y", this.getParticleRelativePos().get(1))
                     .setVariable("z", this.getParticleRelativePos().get(2));
+
 
             for (int i = 0; i < entitiesID.size(); i++) {
                 if (level().getEntity(entitiesID.get(i)) != null) {
@@ -241,6 +250,7 @@ public class BaseEntity extends Entity {
             Expression expX = new ExpressionExtendBuilder(vecAx)
                     .variable("lifetime")
                     .variable("t")
+                    .variable("pt")
                     .variable("x")
                     .variable("y")
                     .variable("z")
@@ -258,6 +268,7 @@ public class BaseEntity extends Entity {
                     .setVariable("vx",this.xd)
                     .setVariable("vy",this.yd)
                     .setVariable("vz",this.zd)
+                    .setVariable("pt",this.age/this.lifetime)
                     .evaluate();
 
 
@@ -270,6 +281,7 @@ public class BaseEntity extends Entity {
                     .variable("vx")
                     .variable("vy")
                     .variable("vz")
+                    .variable("pt")
                     .build();
 
             this.ay += expY.setVariable("t", this.age)
@@ -280,6 +292,7 @@ public class BaseEntity extends Entity {
                     .setVariable("vx",this.xd)
                     .setVariable("vy",this.yd)
                     .setVariable("vz",this.zd)
+                    .setVariable("pt",this.age/this.lifetime)
                     .evaluate();
         } catch (Exception e) {
             System.err.println("错误的参数格式");
@@ -294,6 +307,7 @@ public class BaseEntity extends Entity {
                 .variable("vx")
                 .variable("vy")
                 .variable("vz")
+                .variable("pt")
                 .build();
         this.az = expZ.setVariable("t", this.age)
                 .setVariable("x", this.getParticleRelativePos().get(0))
@@ -303,6 +317,7 @@ public class BaseEntity extends Entity {
                 .setVariable("vy",this.yd)
                 .setVariable("vz",this.zd)
                 .setVariable("lifetime", this.lifetime)
+                .setVariable("pt",this.age/this.lifetime)
                 .evaluate();
 
     }
@@ -318,7 +333,10 @@ public class BaseEntity extends Entity {
                     .variable("z")
                     .variable("vx")
                     .variable("vy")
+                    .variable("t")
+                    .variable("pt")
                     .variable("vz");
+
 
             for (int i = 0; i < entitiesID.size(); i++) {
                 if (level().getEntity(entitiesID.get(i)) != null) {
@@ -336,6 +354,7 @@ public class BaseEntity extends Entity {
                     .setVariable("vz",this.zd)
                     .setVariable("x", this.getParticleRelativePos().get(0))
                     .setVariable("y", this.getParticleRelativePos().get(1))
+                    .setVariable("pt",this.age/this.lifetime)
                     .setVariable("z", this.getParticleRelativePos().get(2));
 
 
@@ -480,6 +499,7 @@ public class BaseEntity extends Entity {
         variables.put("originX", this.originX);
         variables.put("originY", this.originY);
         variables.put("originZ", this.originZ);
+        variables.put("pt",this.age/this.lifetime);
 
         //特殊:实体自变量
         for (String i : Arrays.asList("x", "y", "z")) {
