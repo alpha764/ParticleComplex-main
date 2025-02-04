@@ -8,6 +8,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SimpleAnimatedParticle;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.tokenizer.UnknownFunctionOrVariableException;
@@ -34,7 +35,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
     final String vecAy;
     final String vecAz;
     protected double age;
-    final private int SUB_SPLIT_TIMES = 1;
+
 
 
     private double ax;
@@ -138,12 +139,12 @@ public class BaseParticle extends SimpleAnimatedParticle {
         this.xo = this.x;
         this.yo = this.y;
         this.zo = this.z;
-        this.age+=1D/SUB_SPLIT_TIMES;
+        this.age+=1D;
         if (this.age >= this.lifetime) {
             this.remove();
         } else {
             this.yd -= 0.04D * (double) this.gravity;
-            this.move(this.xd/SUB_SPLIT_TIMES, this.yd/SUB_SPLIT_TIMES, this.zd/SUB_SPLIT_TIMES);
+            this.move(this.xd, this.yd, this.zd);
             if (this.speedUpWhenYMotionIsBlocked && this.y == this.yo) {
                 this.xd *= 1.1D;
                 this.zd *= 1.1D;
@@ -700,6 +701,15 @@ public class BaseParticle extends SimpleAnimatedParticle {
             case"rollZ":
                 this.rollZ=e_.setVariables(variables).evaluate();
                 break;
+            case"transX":
+                this.translate(new Vec3(e_.setVariables(variables).evaluate(),this.centerY,this.centerZ));
+                break;
+            case"transY":
+                this.translate(new Vec3(this.centerX,e_.setVariables(variables).evaluate(),this.centerZ));
+                break;
+            case"transZ":
+                this.translate(new Vec3(this.centerX,this.centerY,e_.setVariables(variables).evaluate()));
+                break;
             default:
                 throw new IllegalArgumentException("Invalid variable: " + y);
         }
@@ -711,10 +721,22 @@ public class BaseParticle extends SimpleAnimatedParticle {
         this.setAlpha(this.colorW / 255F);
     }
 
+    //平到某一个点
+    public void translate(Vec3 pos){
+        double deltaX=pos.x-centerX;
+        double deltaY=pos.y-centerY;
+        double deltaZ=pos.z-centerZ;
+
+        this.centerX=pos.x;
+        this.centerY=pos.y;
+        this.centerZ=pos.z;
+        this.setPos(this.x + deltaX,this.y+deltaY,this.z+deltaZ);
+    }
+
     public void fixVelocityByAcceleration() {
-        this.xd += this.ax / 20 / SUB_SPLIT_TIMES * this.age;
-        this.yd += this.ay / 20 / SUB_SPLIT_TIMES * this.age;
-        this.zd += this.az / 20 / SUB_SPLIT_TIMES * this.age;
+        this.xd += this.ax / 20 * this.age;
+        this.yd += this.ay / 20 * this.age;
+        this.zd += this.az / 20  * this.age;
     }
 
     public List<Double> getParticleRelativePos() {
