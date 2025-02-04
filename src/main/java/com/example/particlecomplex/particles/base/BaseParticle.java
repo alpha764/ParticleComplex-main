@@ -693,10 +693,13 @@ public class BaseParticle extends SimpleAnimatedParticle {
                 break;
             case "pitchX":
                 this.pitchX=e_.setVariables(variables).evaluate();
+                break;
             case"yawY":
                 this.yawY=e_.setVariables(variables).evaluate();
+                break;
             case"rollZ":
                 this.rollZ=e_.setVariables(variables).evaluate();
+                break;
             default:
                 throw new IllegalArgumentException("Invalid variable: " + y);
         }
@@ -728,6 +731,7 @@ public class BaseParticle extends SimpleAnimatedParticle {
             } catch (Exception e) {
                 if (this.age % 100 == 0)
                     if (Minecraft.getInstance().player != null) {
+                        System.err.println("发射错误:"+e);
                         Minecraft.getInstance().player.sendSystemMessage(Component.literal("未知表达式,跳过属性映射"));
                     }
             }
